@@ -57,6 +57,14 @@ typedef struct ack
     unsigned short blocknumber;
 };
 
+typedef struct error
+{
+    unsigned short opcode;
+    unsigned short errorcode;
+    char errmessage[100];
+    unsigned char padding;
+
+};
 struct request readRequest(char* message)
 {
     int i = 0;
