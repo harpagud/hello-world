@@ -1,2 +1,4 @@
 # hello-world
-first repository
+Hello!
+My name is Harpa and this is my first repository.
+
