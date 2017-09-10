@@ -164,6 +164,23 @@ int main(int argc, char *argv[])
 		printf("%s/n",initialRequest.filename);
 		printf("%s/n",initialRequest.mode);
         	printf("%s/n", "I am inside of readRequest!");
+		char directory[10];
+		strcpy(directory, argv[2]);
+		if(fileExists(filename, directory) == false)
+		{
+			//**error handling needed**
+		}
+
+		FILE *fb = fopen(readRequest.filename, "rb") //we use "rb" instead of "r" because we are opening a binary fila
+		//now we need to check if the file is not found. **send error message**
+		if(fb == NULL)
+		{
+			printf("%s/n","Opening file failed");
+			exit(0);
+		}
+ 
+		
+
 	}
   
 	else if(initialRequest.opcode==3)
