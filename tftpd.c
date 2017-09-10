@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
-
+#include <stdbool.h>
 //TFTP Formats
 
 //Read requst
@@ -137,7 +137,7 @@ bool fileExists(char requestedFile[], char dir[])
 }
 
 //Sending error
-void error(int socketfd, struct sockaddr_in client, char errorMessage[]){
+void serror(int socketfd, struct sockaddr_in client, char errorMessage[]){
     error newerror;
     newerror.opcode = 5;
     newerror.errorcode = -1;
@@ -220,6 +220,7 @@ int main(int argc, char *argv[])
 	
         //printf("%d/n",initialRequest.opcode);
 	//printf("%s/n",initialRequest.filename);
+	//RRQ
 	 if(message[1] == 0x1)
 	{
 		char net[50] = "netascii";
@@ -236,12 +237,12 @@ int main(int argc, char *argv[])
 		if(fileExists(readRequest.filename, directory) == false)
 		{
 			//**error handling needed**
-			error(socketfd, client, "File does not exist");
+			serror(socketfd, client, "File does not exist");
 			printf("file does not exist \n");
 		}
 		//before opening the file we want to check in which mode we are in
 		char* filepath = combDir(readRequest.filename,directory);
-		FILE *fb = 0;
+		FILE *fp = 0;
 		//checking if it is in the mode netascii
 		if(strstr(mode, net) != NULL)
 		{
@@ -252,10 +253,10 @@ int main(int argc, char *argv[])
 		}
 		else if(strstr(mode, oct) != NULL)
 		{
-			printf("octed mode! \n")
+			printf("octed mode! \n");
 			fp = fopen(filepath, "rb");
 			//seek to the beginning of the file
-			fseek(fb, SEEK_SET, 0);
+			fseek(fp, SEEK_SET, 0);
 		}
 		else
 		{
@@ -270,9 +271,16 @@ int main(int argc, char *argv[])
 		sendDataPacket(socketfd, client, blocknumber, fp); 
 	}
   
-	else if(initialRequest.opcode==3)
+	//else if(initialRequest.opcode==3)
+	//Data
+	else if(message[1] == 0x3)
         {
-		readData(message);
+		//readData(message);
+		error newerror;
+		newerror.opcode = 0x5;
+		newerror.errorcode = 0x4;
+		char* snt = "Sending a data?";
+		strncpy(newerror.errmessage, src, 20);
        		printf("%s/n", "I am inside of readData!");
  	}
 	else if(initialRequest.opcode==4)
