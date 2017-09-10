@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 		char directory[10];
 		strcpy(directory, argv[2]);
 		//checking if file exists, if not print errors
-		if(fileExists(readRequest.filename, directory) == false)
+		if(fileExists(initialRequest.filename, directory) == false)
 		{
 			//**error handling needed**
 			serror(sockfd, client, "File does not exist");
@@ -267,8 +267,9 @@ int main(int argc, char *argv[])
 		fseek(fp, SEEK_SET, 0);
 
 		//send DATA packet to client
+		data dataPacket;
 		fprintf(stdout, "Sending file: %s\n", initialRequest.filename);
-		sendDataPacket(sockfd, client, blocknumber, fp); 
+		sendDataPacket(sockfd, client, dataPacket.blocknumber, fp); 
 	}
   
 	//else if(initialRequest.opcode==3)
@@ -280,7 +281,7 @@ int main(int argc, char *argv[])
 		newerror.opcode = 0x5;
 		newerror.errorcode = 0x4;
 		char* snt = "Sending a data?";
-		strncpy(newerror.errmessage, src, 20);
+		strncpy(newerror.errmessage, snt, 20);
        		printf("%s/n", "I am inside of readData!");
  	}
 	else if(message[1] == 0x4)
