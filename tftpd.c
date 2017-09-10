@@ -1,36 +1,3 @@
-/* A TCP echo server.
- *
- * Receive a message on port 32000, turn it into upper case and return
- * it to the sender.
- *
- * Copyright (c) 2016, Marcel Kyas
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Reykjavik University nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL MARCEL
- * KYAS NOR REYKJAVIK UNIVERSITY BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -39,24 +6,30 @@
 #include <unistd.h>
 #include <stdio.h>
 
+//TFTP Formats
+
+//Read requst
 typedef struct request {
     unsigned short opcode;
     char filename[512];
     char mode[8];
 }request;
 
+//Data
 typedef struct data{
     unsigned short opcode;
     unsigned short blocknumber;
     char data[512];
 }data;
 
+//Acknowledgment (ACK)
 typedef struct ack
 {
     unsigned short opcode;
     unsigned short blocknumber;
 }ack;
 
+//Error
 typedef struct error
 {
     unsigned short opcode;
@@ -65,7 +38,8 @@ typedef struct error
     unsigned char padding;
 }error;
 
-struct request readRequest(char* message)
+//Reading from RRQ packet
+request readRequest(char* message)
 {
     int i = 0;
     struct request newRequest;
@@ -90,7 +64,8 @@ struct request readRequest(char* message)
     return newRequest;
 }
 
-struct data readData(char* message)
+//Reading from data packet
+data readData(char* message)
 {
     int i = 0;
     struct data newData;
@@ -109,7 +84,8 @@ struct data readData(char* message)
     return newData;
 }
 
-struct ack readAck(char* message)
+//Reading from ack packet
+ack readAck(char* message)
 {
     struct ack newAck;
     newAck.opcode=htons(((struct ack*)message)->opcode);
@@ -150,8 +126,8 @@ int main(int argc, char *argv[])
 	printf("before recieve\n");
         // Receive from connfd, not sockfd.
         ssize_t n = recv(connfd, message, sizeof(message) - 1, 0);
-		printf("after recieve\n");
-		message[n] = '\0';
+	printf("after recieve\n");
+	message[n] = '\0';
         fprintf(stdout, "Received:\n%s\n", message);
 	
         //printf("%d/n",initialRequest.opcode);
@@ -185,14 +161,13 @@ int main(int argc, char *argv[])
   
 	else if(initialRequest.opcode==3)
         {
-	readData(message);
-        printf("%s/n", "I am inside of readData!");
+		readData(message);
+       		printf("%s/n", "I am inside of readData!");
  	}
 	else if(initialRequest.opcode==4)
         {
-	readAck(message);
-
-        printf("%s/n", "I am inside of readAck!");
+		readAck(message);
+       		printf("%s/n", "I am inside of readAck!");
         }
 
 	// Send the message back.
