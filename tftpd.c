@@ -94,6 +94,57 @@ ack readAck(char* message)
     printf("%d\n", newAck.blocknumber);
 }
 
+//Combine directories
+char* combDir(char requestedFile[], char dir[])
+{
+    char* filepath = malloc(sizeof(char)*200);
+    char* cwd;
+    char buff[200];
+    cwd = getcwd(buff, 200);
+    if(filepath!= 0)
+    {
+	printf("My working directory is %s.\n", cwd);
+    }
+	
+    strcat(filepath, cwd);
+    strcat(filepath, "/");
+    strcat(filepath, dir);
+    strcat(filepath, "/");
+    strcat(filepath, requestedFile);
+    strcat(filepath, "\0");	
+    printf("Filepath %s \n", filepath ); 
+    return filepath;
+}
+
+//Check if filepath exists
+bool fileExists(char requestedFile[], char dir[])
+{
+    char* filepath;
+    filepath = combDir(requestedFile, dir);
+    printf("2.filepath = %s\n", filepath); 
+	 
+    if(access(filepath, F_OK) != -1)
+    {
+	//file exists
+	return true;	
+    }
+    else
+    {
+	//file does not exist
+	return false;
+    }
+    free(filepath);    
+}
+
+//Sending error
+void error(int socketfd, struct sockaddr_in client, char errorMessage[]){
+    error newerror;
+    newerror.opcode = 5;
+    newerror.errorcode = -1;
+    memset(newerror.errmessage, 0, sizeof(newerror.errmessage));
+    strncpy(newerror.errmessage, errmessage, strlen(errmessage));
+    sendto(socketfd, &newerror, 512, 0, (struct sockaddr *) &client, sizeof(newerror));
+}
 
 int main(int argc, char *argv[])
 {
