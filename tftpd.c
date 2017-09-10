@@ -237,21 +237,21 @@ int main(int argc, char *argv[])
 		if(fileExists(readRequest.filename, directory) == false)
 		{
 			//**error handling needed**
-			serror(socketfd, client, "File does not exist");
+			serror(sockfd, client, "File does not exist");
 			printf("file does not exist \n");
 		}
 		//before opening the file we want to check in which mode we are in
-		char* filepath = combDir(readRequest.filename,directory);
+		char* filepath = combDir(initialRequest.filename,directory);
 		FILE *fp = 0;
 		//checking if it is in the mode netascii
-		if(strstr(mode, net) != NULL)
+		if(strstr(initialRequest.mode, net) != NULL)
 		{
 			printf("Netascii mode! \n");
 			fp = fopen(filepath, "r");
 			//seek to the beginning of the file
 			fseek(fp, SEEK_SET,0); 
 		}
-		else if(strstr(mode, oct) != NULL)
+		else if(strstr(initialRequest.mode, oct) != NULL)
 		{
 			printf("octed mode! \n");
 			fp = fopen(filepath, "rb");
@@ -267,8 +267,8 @@ int main(int argc, char *argv[])
 		fseek(fp, SEEK_SET, 0);
 
 		//send DATA packet to client
-		fprintf(stdout, "Sending file: %s\n", readRequest.filename);
-		sendDataPacket(socketfd, client, blocknumber, fp); 
+		fprintf(stdout, "Sending file: %s\n", initialRequest.filename);
+		sendDataPacket(sockfd, client, blocknumber, fp); 
 	}
   
 	//else if(initialRequest.opcode==3)
@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
 		strncpy(newerror.errmessage, src, 20);
        		printf("%s/n", "I am inside of readData!");
  	}
-	else if(initialRequest.opcode==4)
+	else if(message[1] == 0x4)
         {
 		readAck(message);
        		printf("%s/n", "I am inside of readAck!");
