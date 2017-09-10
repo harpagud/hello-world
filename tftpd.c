@@ -134,6 +134,8 @@ int main(int argc, char *argv[])
 	//printf("%s/n",initialRequest.filename);
 	 if(message[1] == 0x1)
 	{
+		char net[50] = "netascii";
+		char oct[50] = "octet";
 		request initialRequest = readRequest(&message);
 		readRequest(message);
 		printf("%s/n",initialRequest.opcode);
@@ -142,21 +144,42 @@ int main(int argc, char *argv[])
         	printf("%s/n", "I am inside of readRequest!");
 		char directory[10];
 		strcpy(directory, argv[2]);
-		if(fileExists(filename, directory) == false)
+		//checking if file exists, if not print errors
+		if(fileExists(readRequest.filename, directory) == false)
 		{
 			//**error handling needed**
+			error(socketfd, client, "File does not exist");
+			printf("file does not exist \n");
 		}
-
-		FILE *fb = fopen(readRequest.filename, "rb") //we use "rb" instead of "r" because we are opening a binary fila
-		//now we need to check if the file is not found. **send error message**
-		if(fb == NULL)
+		//before opening the file we want to check in which mode we are in
+		char* filepath = combDir(readRequest.filename,directory);
+		FILE *fb = 0;
+		//checking if it is in the mode netascii
+		if(strstr(mode, net) != NULL)
 		{
-			printf("%s/n","Opening file failed");
-			exit(0);
+			printf("Netascii mode! \n");
+			fp = fopen(filepath, "r");
+			//seek to the beginning of the file
+			fseek(fp, SEEK_SET,0); 
 		}
- 
-		
+		else if(strstr(mode, oct) != NULL)
+		{
+			printf("octed mode! \n")
+			fp = fopen(filepath, "rb");
+			//seek to the beginning of the file
+			fseek(fb, SEEK_SET, 0);
+		}
+		else
+		{
+			printf("Not supposed to get here \n");
+		}
 
+		//seek to the beginning of the file
+		fseek(fp, SEEK_SET, 0);
+
+		//send DATA packet to client
+		fprintf(stdout, "Sending file: %s\n", readRequest.filename);
+		sendDataPacket(socketfd, client, blocknumber, fp); 
 	}
   
 	else if(initialRequest.opcode==3)
