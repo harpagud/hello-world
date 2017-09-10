@@ -43,19 +43,19 @@ typedef struct request {
     unsigned short opcode;
     char filename[512];
     char mode[8];
-};
+}request;
 
 typedef struct data{
     unsigned short opcode;
     unsigned short blocknumber;
     char data[512];
-};
+}data;
 
 typedef struct ack
 {
     unsigned short opcode;
     unsigned short blocknumber;
-};
+}ack;
 
 typedef struct error
 {
@@ -63,8 +63,8 @@ typedef struct error
     unsigned short errorcode;
     char errmessage[100];
     unsigned char padding;
+}error;
 
-};
 struct request readRequest(char* message)
 {
     int i = 0;
@@ -154,25 +154,28 @@ int main(int argc, char *argv[])
 		message[n] = '\0';
         fprintf(stdout, "Received:\n%s\n", message);
 	
-	struct request initialRequest = readRequest(&message);
-        printf("%d/n",initialRequest.opcode);
-	printf("%s/n",initialRequest.filename);
-	 if(initialRequest.opcode==1)
+        //printf("%d/n",initialRequest.opcode);
+	//printf("%s/n",initialRequest.filename);
+	 if(message[1] == 0x1)
 	{
-	readRequest(message);
-        printf("%s\n", "I am inside of readRequest!");
+		request initialRequest = readRequest(&message);
+		readRequest(message);
+		printf("%s/n",initialRequest.opcode);
+		printf("%s/n",initialRequest.filename);
+		printf("%s/n",initialRequest.mode);
+        	printf("%s/n", "I am inside of readRequest!");
 	}
   
 	else if(initialRequest.opcode==3)
         {
 	readData(message);
-        printf("%s\n", "I am inside of readData!");
+        printf("%s/n", "I am inside of readData!");
  	}
 	else if(initialRequest.opcode==4)
         {
 	readAck(message);
 
-        printf("%s\n", "I am inside of readAck!");
+        printf("%s/n", "I am inside of readAck!");
         }
 
 	// Send the message back.
