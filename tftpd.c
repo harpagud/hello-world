@@ -146,6 +146,43 @@ void error(int socketfd, struct sockaddr_in client, char errorMessage[]){
     sendto(socketfd, &newerror, 512, 0, (struct sockaddr *) &client, sizeof(newerror));
 }
 
+bool packetIsSmallerThen512 = false; 
+void sendDataPacket(int socketfd, struct sockaddr_in client, int blocknr, FILE *fp) {
+    
+    int sizeLeft = 0;
+    data packet1;
+    packet1.opcode = htons(3);
+    packet1.blocknumber = htons(blocknr);
+    
+    //read to packet1.data while the size is 512, when < 512 we do
+    // it once more and send the last packet 
+    if ((sizeLeft = fread(packet1.data, 1, 512, fp)) < 512) {
+
+        packet1.data[sizeLeft] = '\0';
+       
+        //send last part of the requested file with the right size 
+        if(sendto(socketfd, &packet1, sizeLeft+4, 0,
+                  (struct sockaddr *) &client,
+                  (socklen_t) sizeof(client)) < 0) {
+            perror("error in sendto\n");
+        }
+        
+        //close the file 
+        fclose(fp);
+        
+        //set global bool variable to true 
+        packetIsSmallerThen512 = true;
+        
+        return;
+    }
+    
+    //send DATA packet to client 
+    if(sendto(socketfd, &packet1, sizeof(packet1), 0,
+              (struct sockaddr *) &client,
+              (socklen_t) sizeof(client)) < 0) {
+        perror("error in sendto\n");
+    }
+}
 int main(int argc, char *argv[])
 {
     int sockfd;
