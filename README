@@ -1,0 +1,22 @@
+TFTP Server
+Written by Harpa Guðrún Hreinsdóttir and Sóley Ásgeirsdóttir
+
+To run the server, simply pass the desired port number and data folder to the program as arguments (in that order).
+Ctrl+c stops the server from running. Otherwise it will keep listening on the port and send files as requested.
+
+We have struct for request, data, ack and error. 
+We have the following methods outside the main. 
+
+readRequest: reads message and puts it into the request struct. 
+
+readData: reads message and puts it into the data struct. 
+
+readAck: reads message and puts it into the ack struct. 
+
+combDir: This method combines the file and directory.
+
+fileExists: this method checks if a filepath exists or not.
+
+serror: sends an error message
+
+sendDataPacket: sends a data packet.
