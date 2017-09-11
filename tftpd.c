@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
     int sockfd;
     struct sockaddr_in server, client;
     char message[512];
-
+    int c = 0;
     // Create and bind a TCP socket.
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -206,7 +206,16 @@ int main(int argc, char *argv[])
     listen(sockfd, 1);
     printf("Hello world\n");
     for (;;) {
-        // We first have to accept a TCP connection, connfd is a fresh
+        fd_set rfds;
+
+	//check wheter there is data on the soctet fd
+	FD_ZERO(&rfds);
+	FD_SET(sockfd, &rfds);
+
+	//data is available, recieve it
+	assert(FD_ISSET(sockfd, &rfds));
+
+	// We first have to accept a TCP connection, connfd is a fresh
         // handle dedicated to this connection.
         printf("before accept\n");
         socklen_t len = (socklen_t) sizeof(client);
@@ -275,20 +284,42 @@ int main(int argc, char *argv[])
 	//else if(initialRequest.opcode==3)
 	//Data
 	else if(message[1] == 0x3)
-        {
-		//readData(message);
+        {	
+		char *mess;
 		error newerror;
 		newerror.opcode = 0x5;
 		newerror.errorcode = 0x4;
-		char* snt = "Sending a data?";
-		strncpy(newerror.errmessage, snt, 20);
-       		printf("%s/n", "I am inside of readData!");
+		char *snt = "Sending a data?";
+		strncpy(newerror.errmessage, snt, 16);
+		//sending a error message
+		serror(sockfd, client, newerror.errmessage);
  	}
 	else if(message[1] == 0x4)
         {
+		//fill ack
+		ack newAck;
 		readAck(message);
-       		printf("%s/n", "I am inside of readAck!");
+		if(newAck.blocknumber != c)
+		{
+			error newerror;
+			newerror.opcode = 0x5;
+			newerror.errorcode = 0x0;
+			char *snt = "blocknumber does not match last data packet";
+			strncpy(newerror.errmessage, snt, 44);
+			serror(sockfd, client, newerror.errmessage);
+		}
+		c++;
         }
+
+	if(message[1] == 0x5)
+	{
+		error newerror;
+		newerror.opcode = 0x5;
+		newerror.errorcode = 0x0;
+		char *snt = "This is an error message";
+		strncpy(newerror.errmessage, snt, 25);
+		serror(sockfd, client, newerror.errmessage);
+	}
 
 	// Send the message back.
         send(connfd, message, (size_t) n, 0);
